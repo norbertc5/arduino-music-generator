@@ -19,6 +19,6 @@ public class PlayLine : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        collision.GetComponent<Tile>().MakeDark();
+        //collision.GetComponent<Tile>().MakeDark();
     }
 }

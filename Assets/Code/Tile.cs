@@ -17,11 +17,24 @@ public class Tile : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        TileSpawner.canSpawn = false;
+        if(collision.CompareTag("Ghost"))
+        {
+            TileSpawner.canSpawn = false;
+            TileSpawner.tileUnderGhost = gameObject;
+        }
+        if(collision.CompareTag("PlayNoteTrigger"))
+        {
+            print("play note");
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        TileSpawner.canSpawn = true;
+        if(collision.CompareTag("Ghost"))
+        {
+            TileSpawner.canSpawn = true;
+            if(TileSpawner.tileUnderGhost == gameObject)
+                TileSpawner.tileUnderGhost = null;
+        }
     }
 }

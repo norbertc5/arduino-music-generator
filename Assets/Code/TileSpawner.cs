@@ -1,14 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using System;
-using UnityEngine.EventSystems;
+using norbertcUtilities.Extensions;
 
 public class TileSpawner : MonoBehaviour
 {
     [SerializeField] GameObject tilePrefab;
     [SerializeField] Canvas canvas;
     [SerializeField] Transform ghostTile;
+    [SerializeField] Transform tilesParent;
+    public static GameObject tileUnderGhost;
 
     GameObject newTile;
     Vector2 mousePos;
@@ -17,34 +16,38 @@ public class TileSpawner : MonoBehaviour
     int Length { get { return length; } set { length = value;  ghostTile.transform.localScale = new Vector2(value, 0.3f); } }
 
     public static bool canSpawn = true;
+    [SerializeField] float ghostYClamp = -270;
+    [SerializeField] float ghostXClamp = 500;
 
     private void Update()
     {
         RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.GetComponent<RectTransform>(), Input.mousePosition, canvas.worldCamera, out mousePos);
 
         // rounding x and y to make ghost attaches to grid
-        int rx = RoundTo(mousePos.x, 100);
-        int ry = RoundTo(mousePos.y, 30);
+        int rx = ncUtilitiesExtensions.RoundTo(mousePos.x, 100);
+        int ry = ncUtilitiesExtensions.RoundTo(mousePos.y, 30);
 
         mousePos = new Vector2(rx, ry);
 
         // spawn new tiles
         if(Input.GetMouseButtonDown(0))
         {
-            if (!canSpawn)
+            if (!canSpawn || !isCursorOnBoard() || Manager.isPlaying)
                 return;
 
-            newTile = Instantiate(tilePrefab, canvas.transform);
+            newTile = Instantiate(tilePrefab, tilesParent);
 
-            newTile.transform.localPosition = mousePos;
+            //newTile.transform.localPosition = ghostTile.transform.localPosition;
+            newTile.transform.position = ghostTile.transform.position;
             newTile.transform.localScale = new Vector3(Length, 0.3f);
             newTile.transform.SetSiblingIndex(2);
         }
         else if(Input.GetMouseButtonDown(1))  // remove tiles
         {
             if (canSpawn) return;
-            RaycastHit2D hit = Physics2D.Raycast(ghostTile.position, Vector2.down);
-            Destroy(hit.transform.gameObject);
+            //RaycastHit2D hit = Physics2D.Raycast(ghostTile.position, Vector2.down);
+            //Destroy(hit.transform.gameObject);
+            Destroy(tileUnderGhost);
         }
 
         #region Change shape of tile
@@ -59,11 +62,12 @@ public class TileSpawner : MonoBehaviour
             Length = Mathf.Clamp(Length, 1, 4);
         #endregion
 
-        ghostTile.transform.localPosition = mousePos;
+        if(isCursorOnBoard())
+            ghostTile.transform.localPosition = mousePos;
     }
 
-    int RoundTo(float valToRound, int roundTo = 10)
+    bool isCursorOnBoard()
     {
-        return ((int)Math.Round(valToRound / roundTo)) * roundTo;
+        return mousePos.y >= ghostYClamp && mousePos.x >= ghostXClamp;
     }
 }
