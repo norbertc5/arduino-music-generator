@@ -18,14 +18,16 @@ public class TileSpawner : MonoBehaviour
     public static bool canSpawn = true;
     [SerializeField] float ghostYClamp = -270;
     [SerializeField] float ghostXClamp = 500;
+    [SerializeField] int ghostXRound = 100;
+    [SerializeField] int ghostYRound = 30;
 
     private void Update()
     {
         RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.GetComponent<RectTransform>(), Input.mousePosition, canvas.worldCamera, out mousePos);
 
         // rounding x and y to make ghost attaches to grid
-        int rx = ncUtilitiesExtensions.RoundTo(mousePos.x, 100);
-        int ry = ncUtilitiesExtensions.RoundTo(mousePos.y, 30);
+        int rx = ncUtilitiesExtensions.RoundTo(mousePos.x, ghostXRound);
+        int ry = ncUtilitiesExtensions.RoundTo(mousePos.y, ghostYRound);
 
         mousePos = new Vector2(rx, ry);
 
@@ -37,16 +39,13 @@ public class TileSpawner : MonoBehaviour
 
             newTile = Instantiate(tilePrefab, tilesParent);
 
-            //newTile.transform.localPosition = ghostTile.transform.localPosition;
             newTile.transform.position = ghostTile.transform.position;
             newTile.transform.localScale = new Vector3(Length, 0.3f);
-            newTile.transform.SetSiblingIndex(2);
+            newTile.transform.SetAsLastSibling();
         }
         else if(Input.GetMouseButtonDown(1))  // remove tiles
         {
             if (canSpawn) return;
-            //RaycastHit2D hit = Physics2D.Raycast(ghostTile.position, Vector2.down);
-            //Destroy(hit.transform.gameObject);
             Destroy(tileUnderGhost);
         }
 

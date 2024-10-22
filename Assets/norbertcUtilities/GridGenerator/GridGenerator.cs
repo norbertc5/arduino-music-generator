@@ -1,15 +1,13 @@
-using System;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace norbertcUtilities.Grid
+namespace norbertcUtilities.GridGenerator
 {
-    public class Grid : MonoBehaviour
+    public class GridGenerator : MonoBehaviour
     {
-        [SerializeField] protected GameObject cellPrefab;
-        [SerializeField] protected int width;
-        [SerializeField] protected int height;
+        [SerializeField] private GameObject cellPrefab;
+        public int width;
+        public int height;
         [SerializeField] private Color color1;
         [SerializeField] private Color color2;
 
@@ -45,7 +43,7 @@ namespace norbertcUtilities.Grid
                         else
                             SetCellColor(newCell, img, color2);
                     }
-                    else if(boardColorMode == BoardColorMode.stripes)
+                    else if(boardColorMode == BoardColorMode.stripes)  // set color like stripes
                     {
                         if (y % 2 == 0)
                             SetCellColor(newCell, img, color1);
