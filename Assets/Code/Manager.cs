@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using norbertcUtilities.Extensions;
 using TMPro;
 
+[RequireComponent(typeof(AudioSource))]
 public class Manager : MonoBehaviour
 {
     [Header("UI references")]
@@ -19,7 +20,7 @@ public class Manager : MonoBehaviour
     float keyboarStartY;
 
     const int CELL_X_SIZE= 100;
-    const int CELL_y_SIZE = 30;
+    public const int CELL_Y_SIZE = 30;
     const int MIN_TEMPO_CHANGE = 5;
     const float BOARD_HORIZONTAL_ALIGN = 18.75F;
 
@@ -27,6 +28,7 @@ public class Manager : MonoBehaviour
     public static int tempo;
 
     Transform lastGridCell;
+    AudioSource source;
 
     void Start()
     {
@@ -37,6 +39,9 @@ public class Manager : MonoBehaviour
 
         HorizontalSlider_OnValueChange();
         VerticalSlider_OnValueChange();
+        sampleRate = AudioSettings.outputSampleRate;
+        source = GetComponent<AudioSource>();
+        source.enabled = false;
     }
 
     void Update()
@@ -81,7 +86,7 @@ public class Manager : MonoBehaviour
     public void VerticalSlider_OnValueChange()
     {
         // update board and keyboard scrolling
-        int roundedValue = ncUtilitiesExtensions.RoundTo(verticalSlider.value, CELL_y_SIZE);
+        int roundedValue = ncUtilitiesExtensions.RoundTo(verticalSlider.value, CELL_Y_SIZE);
         verticalSlider.SetValueWithoutNotify(roundedValue);
 
         Vector2 boardPos = Vector2.zero;
@@ -93,16 +98,46 @@ public class Manager : MonoBehaviour
 
     public void Play()
     {
-        print("play");
         isPlaying = true;
         ghost.SetActive(false);
+        ToggleScrollSliders();
+        source.enabled = true;
     }
 
     public void Stop()
     {
-        print("stop");
         isPlaying = false;
         ghost.SetActive(true);
         board.localPosition = BoardScrolling.startPos;
+        ToggleScrollSliders();
+        VerticalSlider_OnValueChange();
+        HorizontalSlider_OnValueChange();
+        source.enabled = false;
+    }
+
+    void ToggleScrollSliders()
+    {
+        verticalSlider.gameObject.SetActive(!verticalSlider.gameObject.activeSelf);
+        horizontalSlider.gameObject.SetActive(!horizontalSlider.gameObject.activeSelf);
+    }
+
+    public static double freq = 0;
+    float amplitude = 0.5f;
+    double phase;
+    int sampleRate;
+    private void OnAudioFilterRead(float[] data, int channels)
+    {
+        double phaseIncrement = freq / sampleRate;
+
+        for (int sample = 0; sample < data.Length; sample += channels)
+        {
+            float value = Mathf.Sin((float)phase * 2 * Mathf.PI) * amplitude;
+            phase = (phase + phaseIncrement) % 1;
+
+            for (int channel = 0; channel < channels; channel++)
+            {
+                data[sample + channel] = value;
+            }
+        }
     }
 }

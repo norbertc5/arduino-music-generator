@@ -135,13 +135,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 300
-  ghost: {fileID: 0}
-  test:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 0
-    height: 0
 --- !u!61 &6240121767283535315
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -185,5 +178,5 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 100, y: 100}
+  m_Size: {x: 95, y: 100}
   m_EdgeRadius: 0

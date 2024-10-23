@@ -8,11 +8,12 @@ public class BarLines : MonoBehaviour
     [SerializeField] GameObject barLine;
     [SerializeField] float ypos = 100;
     [SerializeField] GridGenerator gridGenerator;
+    [SerializeField] int xposOffset = -1200;
 
     void Start()
     {
         // spawn bar lines
-        int xpos = -200;
+        int xpos = xposOffset;
         for (int i = 0; i < (gridGenerator.width / 4)-1; i++)
         {
             var newBarLine = Instantiate(barLine, transform);

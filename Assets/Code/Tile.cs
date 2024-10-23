@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Drawing;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
+using norbertcUtilities.ActionOnTime;
 
 public class Tile : MonoBehaviour
 {
     [SerializeField] float speed = 1;
+    static bool stop;
 
     public void MakeDark()
     {
@@ -22,9 +23,17 @@ public class Tile : MonoBehaviour
             TileSpawner.canSpawn = false;
             TileSpawner.tileUnderGhost = gameObject;
         }
-        if(collision.CompareTag("PlayNoteTrigger"))
+    }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.CompareTag("PlayNoteTrigger"))
         {
-            print("play note");
+
+            int level = (int)transform.localPosition.y / Manager.CELL_Y_SIZE + 9;
+
+            Manager.freq = 261 * Mathf.Pow(1.059f, level);
+            print(Manager.freq);
         }
     }
 
@@ -35,6 +44,10 @@ public class Tile : MonoBehaviour
             TileSpawner.canSpawn = true;
             if(TileSpawner.tileUnderGhost == gameObject)
                 TileSpawner.tileUnderGhost = null;
+        }
+        if (collision.CompareTag("PlayNoteTrigger"))
+        {
+            Manager.freq = 0;
         }
     }
 }
