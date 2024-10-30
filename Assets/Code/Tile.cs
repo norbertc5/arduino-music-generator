@@ -3,12 +3,24 @@ using System.Collections.Generic;
 using System.Drawing;
 using UnityEngine;
 using UnityEngine.UI;
-using norbertcUtilities.ActionOnTime;
+using norbertcUtilities.Extensions;
 
 public class Tile : MonoBehaviour
 {
-    [SerializeField] float speed = 1;
-    static bool stop;
+    public double frequency;
+    public int duration;
+    public int l;
+    public int pos;
+
+    private void Start()
+    {
+        int level = ncUtilitiesExtensions.RoundTo((int)transform.localPosition.y, 30) / Manager.CELL_Y_SIZE + 9;
+        l = level;
+        pos = (int)transform.localPosition.y;
+        //level = (level == 0) ? level = 1 : level;
+        frequency = 261.63 * Mathf.Pow(1.059f, level);
+        duration = (int)transform.localScale.x;
+    }
 
     public void MakeDark()
     {
@@ -29,11 +41,7 @@ public class Tile : MonoBehaviour
     {
         if (collision.CompareTag("PlayNoteTrigger"))
         {
-
-            int level = (int)transform.localPosition.y / Manager.CELL_Y_SIZE + 9;
-
-            Manager.freq = 261 * Mathf.Pow(1.059f, level);
-            print(Manager.freq);
+            Manager.freq = frequency;
         }
     }
 
