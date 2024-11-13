@@ -10,7 +10,7 @@ using UnityEditor.Experimental.GraphView;
 public class CodeGenerator : MonoBehaviour
 {
     List<Tile> orderedTiles = new List<Tile>();
-    float posx;
+    float comparingTilePosX;
 
     public void Generate()
     {
@@ -18,52 +18,84 @@ public class CodeGenerator : MonoBehaviour
 
         Tile[] unorderedTiles = FindObjectsOfType<Tile>();
         orderedTiles = unorderedTiles.OrderBy(t => t.transform.position.x).ToList();
-        posx = orderedTiles[0].transform.position.x;
+        int numberOfNotesAndPauses = 0;
+
+        ResetComparingTile();
 
         File.WriteAllText(path, "");  // clear file
 
-        // appends music data into code.txt flie
-
-        // frequencies
-        for (int i = 0; i < orderedTiles.Count; i++)
+        using (StreamWriter writer = new StreamWriter(path, append: true))
         {
-            string note = orderedTiles[i].frequency.ToString().Replace(',', '.');
-            if(IsFreeSpace(i, out float x))
-                File.AppendAllText(path, "0, ");
-            File.AppendAllText(path, $"{note}, ");
-        }
-        File.AppendAllText(path, "\n");
+            // appends music data into code.txt flie
 
-        // durations
-        for (int i = 0; i < orderedTiles.Count; i++)
-        {
-            int duration = orderedTiles[i].duration;
+            // frequencies
+            writer.WriteLine("Frequencies:");
+            for (int i = 0; i < orderedTiles.Count; i++)
+            {
+                string note = orderedTiles[i].frequency.ToString().Replace(',', '.');
+                writer.Write(note);  // write note
+                numberOfNotesAndPauses++;
 
-            if (IsFreeSpace(i, out float diff))
-                File.AppendAllText(path, $"{((diff/-100)-1)*(600/(Manager.tempo / 100))}, ");
+                if (i < orderedTiles.Count - 1)
+                    writer.Write(", "); // add comma until the end
 
-            File.AppendAllText(path, $"{duration*(600 / (Manager.tempo / 100))}, ");
+                if (IsFreeSpace(i, out int x))
+                {
+                    writer.Write("0, ");  // add 0 when pause
+                    numberOfNotesAndPauses++;
+                }
+            }
+            writer.WriteLine("\n");
+            ResetComparingTile();
+
+            // durations
+            writer.WriteLine("Durations:");
+            for (int i = 0; i < orderedTiles.Count; i++)
+            {
+                int duration = orderedTiles[i].duration;
+                writer.Write($"{duration * 600}");
+
+                if (IsFreeSpace(i, out int diff))
+                {
+                    if(diff < 0)
+                        writer.Write($", {(diff / -100) * 600}");
+                }
+
+                if (i < orderedTiles.Count - 1)
+                    writer.Write(", "); // add comma until the end
+            }
+
+            writer.WriteLine($"\n\nNumber: {numberOfNotesAndPauses}\n");
+
+            writer.Flush();
         }
 
         Process.Start("notepad.exe", path);
     }
 
-    bool IsFreeSpace(int i, out float diff)
+    bool IsFreeSpace(int i, out int diff)
     {
-        diff = posx - orderedTiles[i].transform.position.x + 100 * orderedTiles[i].duration;
+        Tile checking = orderedTiles[i];
+
+        int tileLen = 100 * checking.duration;
+        int distToNext = Mathf.Abs((int)comparingTilePosX - (int)checking.transform.position.x);
+        diff = tileLen - distToNext;
 
         // it's using to compare positions of neares tiles and to define whether we come across free space
-        Tile checking = orderedTiles[i];
-        posx = checking.transform.position.x;
-        print(diff);
+        try { comparingTilePosX = orderedTiles[i + 2].transform.position.x; } catch { }
 
-        if (diff <= -100)
-        {
+        if (diff < 0)
             return true;
-        }
         else
-        {
             return false;
-        }
+    }
+
+    void ResetComparingTile()
+    {
+        // set comparing tile to next one
+        if (orderedTiles.Count > 1)
+            comparingTilePosX = orderedTiles[1].transform.position.x;
+        else
+            comparingTilePosX = orderedTiles[0].transform.position.x;
     }
 }
